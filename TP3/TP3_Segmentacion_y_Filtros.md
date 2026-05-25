@@ -1,4 +1,4 @@
-# TP3 — Umbralización y Eliminación de Ruido
+# TP3 — Segmentación y Filtros
 **Instituto de Formación Técnica Superior N° 33**  
 **Materia:** Técnicas de Procesamiento de Imágenes  
 
@@ -169,6 +169,70 @@ def demostrar_sal_pimienta(ruta_imagen):
 
 demostrar_sal_pimienta('documento.jpg')
 ```
+
+---
+
+## Anexo — Detección de rostros con OpenCV
+
+La detección de rostros es uno de los casos de uso más clásicos de OpenCV. Utiliza clasificadores en cascada (Haar Cascades), un método que analiza la imagen buscando patrones visuales característicos de un rostro humano: ojos, nariz, boca y la estructura general de la cara.
+
+### ¿Cómo funciona?
+
+1. La imagen se convierte a escala de grises
+2. Se aplica el clasificador `haarcascade_frontalface_default.xml` — un modelo preentrenado incluido en OpenCV
+3. El clasificador escanea la imagen a distintas escalas buscando el patrón de rostro
+4. Devuelve las coordenadas (x, y, ancho, alto) de cada rostro detectado
+5. Se dibuja un rectángulo verde alrededor de cada uno
+
+### Código
+
+```python
+import cv2
+import matplotlib.pyplot as plt
+
+# Cargar imagen y clasificador
+imagen = cv2.imread('foto.jpg')
+imagen_rgb = cv2.cvtColor(imagen, cv2.COLOR_BGR2RGB)
+gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
+
+# Cargar clasificador preentrenado de OpenCV
+clasificador = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Detectar rostros
+rostros = clasificador.detectMultiScale(gris, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+print(f"Rostros detectados: {len(rostros)}")
+
+# Dibujar rectángulos
+for (x, y, w, h) in rostros:
+    cv2.rectangle(imagen_rgb, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+# Mostrar resultado
+plt.figure(figsize=(10, 6))
+plt.imshow(imagen_rgb)
+plt.title(f'Rostros detectados: {len(rostros)}')
+plt.axis('off')
+plt.savefig('resultado_rostros.png', dpi=150, bbox_inches='tight')
+plt.show()
+```
+
+### Parámetros clave
+
+| Parámetro | Descripción |
+|---|---|
+| `scaleFactor` | Cuánto se reduce la imagen en cada escala (1.1 = 10% menor por paso) |
+| `minNeighbors` | Cuántas detecciones vecinas se necesitan para confirmar un rostro (más alto = menos falsos positivos) |
+| `minSize` | Tamaño mínimo del rostro a detectar en píxeles |
+
+### Conexión con YOLO y MediaPipe
+
+| Tecnología | Detecta | Precisión | Velocidad |
+|---|---|---|---|
+| OpenCV Haar | Rostros (frontal) | Media | Muy rápida |
+| YOLO | Objetos en general | Alta | Rápida |
+| MediaPipe | Puntos del cuerpo (33) | Muy alta | Rápida |
+
+OpenCV Haar fue el primer método ampliamente usado para detección de rostros en tiempo real. YOLO y MediaPipe son evoluciones más modernas que incorporan redes neuronales para mayor precisión.
 
 ---
 
